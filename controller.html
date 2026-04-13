@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BMS Controller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:      #f0f2f0;
+    --surface: #ffffff;
+    --border:  #d4e6d4;
+    --accent:  #3DCD58;
+    --accent2: #1a9c35;
+    --text:    #1a1a1a;
+    --dim:     #6b8c6b;
+    --radius:  6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(61,205,88,0.04) 28px,
+      rgba(61,205,88,0.04) 29px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, #ffffff 60%, #f0faf2);
+    box-shadow: 0 1px 4px rgba(61,205,88,0.12);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: .12em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--text); }
+
+  nav {
+    display: flex;
+    gap: 0;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 22px;
+    font-family: 'Space Mono', monospace;
+    font-size: .72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  nav button:hover { color: var(--text); }
+
+  nav button.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  nav button svg {
+    width: 14px; height: 14px; flex-shrink: 0;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .media-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .media-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: .7;
+    z-index: 1;
+  }
+
+  .img-area {
+    width: 100%;
+    min-height: 520px;
+    background: #e8f0e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .img-area img {
+    width: 100%;
+    max-height: 620px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--dim);
+    font-size: .72rem;
+    letter-spacing: .08em;
+    text-align: center;
+    padding: 3rem;
+  }
+
+  .placeholder svg {
+    width: 52px; height: 52px;
+    opacity: .3;
+  }
+
+  .placeholder code {
+    font-family: 'Space Mono', monospace;
+    font-size: .65rem;
+    background: #d4e6d4;
+    color: #1a9c35;
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+
+  .video-area {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1a0d;
+  }
+
+  .video-area iframe,
+  .video-area video {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .statusbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #ffffff;
+    border-top: 2px solid var(--accent);
+    padding: 6px 24px;
+    display: flex; align-items: center; gap: 24px;
+    font-size: .62rem;
+    color: var(--dim);
+    font-family: 'Space Mono', monospace;
+    z-index: 200;
+  }
+
+  .pulse-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1.4s ease-in-out infinite;
+    display: inline-block; margin-right: 5px;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .4; transform: scale(.75); }
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; flex-direction: column; gap: 12px; }
+    main { padding: 20px 12px 72px; }
+    nav button { padding: 8px 14px; font-size: .65rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">BMS <span>/ Controller</span></div>
+  <nav>
+    <button class="active" onclick="switchTab('image', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      Image
+    </button>
+    <button onclick="switchTab('video', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+      Video
+    </button>
+  </nav>
+</header>
+
+<main>
+
+  <div class="tab-panel active" id="panel-image">
+    <div class="media-card">
+      <div class="img-area">
+
+        <!-- REPLACE src with your image filename
+             Same folder: src="controller.jpg"
+             Subfolder:   src="assets/controller.jpg" -->
+        <img
+          src="C:\Users\spoor\Downloads\major projrct.png"
+          alt="BMS controller hardware"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+
+        <div class="placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3DCD58" stroke-width="1.2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Image not found</span>
+          <span>Replace <code>src="controller.jpg"</code> with your filename</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panel-video">
+    <div class="media-card">
+      <div class="video-area">
+
+        <!-- OPTION A — YouTube:
+             Replace YOUR_VIDEO_ID_HERE with your video's ID
+             e.g. https://www.youtube.com/embed/dQw4w9WgXcQ
+
+             OPTION B — Local file:
+             Delete the iframe and use: -->
+             <video controls style="width:100%;height:100%;display:block;">
+               <source src="C:\Users\spoor\Downloads\Untitled design (5).mp4" type="video/mp4">
+             </video> 
+      <!--  <iframe
+          src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE"
+          title="BMS controller demo"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe> -->
+
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="statusbar">
+  <span><span class="pulse-dot"></span>BMS Dashboard</span>
+  <span>Smart HVAC &middot; Multi-Parameter Sensor Integration</span>
+</div>
+
+<script>
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
